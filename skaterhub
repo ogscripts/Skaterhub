@@ -1,0 +1,392 @@
+-- Konfiguracja rozmiarów
+local FRAME_WIDTH = 600
+local FRAME_HEIGHT = 400
+local HEADER_HEIGHT = 40
+
+-- Globalna zmienna kontrolująca wykonywanie skryptów
+_G.AllScriptsDisabled = false
+
+-- Utwórz ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SkaterHubGUI"
+screenGui.Parent = game:GetService("CoreGui")
+
+-- Główny kontener
+local frame = Instance.new("Frame")
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, FRAME_WIDTH, 0, FRAME_HEIGHT)
+frame.Position = UDim2.new(0.5, -FRAME_WIDTH/2, 0.5, -FRAME_HEIGHT/2)
+frame.BackgroundColor3 = Color3.fromRGB(37, 37, 38)
+frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
+frame.Active = true
+frame.Draggable = true
+frame.ClipsDescendants = true
+frame.Parent = screenGui
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 10)
+frameCorner.Parent = frame
+
+-- Nagłówek
+local header = Instance.new("Frame")
+header.Name = "Header"
+header.Size = UDim2.new(1, 0, 0, HEADER_HEIGHT)
+header.BackgroundTransparency = 1
+header.Parent = frame
+
+-- Przyciski kontrolne
+local controlButtons = {
+    {
+        Name = "Disable",
+        Color = Color3.fromRGB(0, 170, 0),
+        Position = UDim2.new(1, -65, 0, 10),
+        VisibleOnMinimize = false
+    },
+    {
+        Name = "Minimize",
+        Color = Color3.fromRGB(255, 165, 0),
+        Position = UDim2.new(1, -45, 0, 10),
+        VisibleOnMinimize = true
+    },
+    {
+        Name = "Close",
+        Color = Color3.fromRGB(255, 0, 0),
+        Position = UDim2.new(1, -25, 0, 10),
+        VisibleOnMinimize = false
+    }
+}
+
+local buttons = {}
+for _, btn in ipairs(controlButtons) do
+    local button = Instance.new("TextButton")
+    button.Name = btn.Name.."Button"
+    button.Size = UDim2.new(0, 15, 0, 15)
+    button.Position = btn.Position
+    button.BackgroundColor3 = btn.Color
+    button.BorderSizePixel = 0
+    button.Text = ""
+    button.Parent = header
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 7)
+    corner.Parent = button
+    
+    buttons[btn.Name] = {
+        Object = button,
+        Visibility = btn.VisibleOnMinimize
+    }
+end
+
+-- Tytuł
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Text = "SKATER HUB"
+titleLabel.Size = UDim2.new(0, 100, 1, 0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+titleLabel.TextScaled = true
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.Parent = header
+
+-- Funkcjonalność przycisków kontrolnych
+buttons.Close.Object.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+buttons.Disable.Object.MouseButton1Click:Connect(function()
+    _G.AllScriptsDisabled = not _G.AllScriptsDisabled
+    buttons.Disable.Object.BackgroundColor3 = _G.AllScriptsDisabled 
+        and Color3.fromRGB(100, 100, 100) 
+        or Color3.fromRGB(0, 170, 0)
+end)
+
+-- System minimalizacji
+local isMinimized = false
+local tweenService = game:GetService("TweenService")
+
+local function toggleMinimize()
+    local targetSize = isMinimized 
+        and UDim2.new(0, FRAME_WIDTH, 0, FRAME_HEIGHT)
+        or UDim2.new(0, FRAME_WIDTH, 0, HEADER_HEIGHT)
+    
+    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local tween = tweenService:Create(frame, tweenInfo, {Size = targetSize})
+    
+    contentFrame.Visible = isMinimized
+    footer.Visible = isMinimized
+    buttons.Close.Object.Visible = isMinimized
+    buttons.Disable.Object.Visible = isMinimized
+    titleLabel.Visible = isMinimized
+    
+    tween:Play()
+    isMinimized = not isMinimized
+end
+
+buttons.Minimize.Object.MouseButton1Click:Connect(toggleMinimize)
+
+-- Sekcja zawartości
+local contentFrame = Instance.new("Frame")
+contentFrame.Name = "ContentFrame"
+contentFrame.Size = UDim2.new(1, 0, 1, -HEADER_HEIGHT)
+contentFrame.Position = UDim2.new(0, 0, 0, HEADER_HEIGHT)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Parent = frame
+
+-- Profil gracza
+local profileFrame = Instance.new("Frame")
+profileFrame.Size = UDim2.new(0, 180, 1, -50)
+profileFrame.Position = UDim2.new(0, 10, 0, 0)
+profileFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+profileFrame.Parent = contentFrame
+
+local profileCorner = Instance.new("UICorner")
+profileCorner.CornerRadius = UDim.new(0, 8)
+profileCorner.Parent = profileFrame
+
+-- Avatar
+local player = game.Players.LocalPlayer
+local avatar = Instance.new("ImageLabel")
+avatar.Size = UDim2.new(0, 100, 0, 100)
+avatar.Position = UDim2.new(0.5, -50, 0, 10)
+avatar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+avatar.Parent = profileFrame
+
+local avatarCorner = Instance.new("UICorner")
+avatarCorner.CornerRadius = UDim.new(0, 8)
+avatarCorner.Parent = avatar
+
+spawn(function()
+    local userId = player.UserId
+    local thumbType = Enum.ThumbnailType.HeadShot
+    local thumbSize = Enum.ThumbnailSize.Size100x100
+    local content = game:GetService("Players"):GetUserThumbnailAsync(userId, thumbType, thumbSize)
+    avatar.Image = content
+end)
+
+-- Informacje o graczu
+local playerInfo = {
+    "Name: "..player.DisplayName,
+    "Username: "..player.Name,
+    "User ID: "..player.UserId,
+    "Account Age: "..player.AccountAge.." days"
+}
+
+for i, text in ipairs(playerInfo) do
+    local label = Instance.new("TextLabel")
+    label.Text = text
+    label.Size = UDim2.new(1, -20, 0, 20)
+    label.Position = UDim2.new(0, 10, 0, 120 + (i-1)*25)
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.Font = Enum.Font.SourceSans
+    label.TextSize = 14
+    label.BackgroundTransparency = 1
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = profileFrame
+end
+
+-- Lista skryptów
+local scriptsFrame = Instance.new("ScrollingFrame")
+scriptsFrame.Size = UDim2.new(0, FRAME_WIDTH - 220, 1, -50)
+scriptsFrame.Position = UDim2.new(0, 200, 0, 0)
+scriptsFrame.BackgroundTransparency = 1
+scriptsFrame.ScrollBarThickness = 5
+scriptsFrame.Parent = contentFrame
+
+local uiListLayout = Instance.new("UIListLayout")
+uiListLayout.Padding = UDim.new(0, 8)
+uiListLayout.Parent = scriptsFrame
+
+scriptsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+-- Zaktualizowane skrypty
+local scripts = {
+    {
+        Name = "Blade Ball", 
+        Color = Color3.fromRGB(0, 170, 255),
+        URL = "https://raw.githubusercontent.com/sirapobsriumang/Blade-ball/main/Blade-ball-free.lua"
+    },
+    {
+        Name = "Murder Mystery 2", 
+        Color = Color3.fromRGB(255, 0, 0),
+        URL = "https://raw.githubusercontent.com/mzkv/mm2/main/xHUB"
+    },
+    {
+        Name = "Jujutsu Chronicles", 
+        Color = Color3.fromRGB(139, 92, 246),
+        URL = "https://raw.githubusercontent.com/A9eaL2017/69/main/a9ealsjjc"
+    },
+    {
+        Name = "Jujutsu Infinite", 
+        Color = Color3.fromRGB(255, 215, 0),
+        URL = "https://raw.githubusercontent.com/Mixplaylikeencoder/Games/main/JJI"
+    },
+    {
+        Name = "Haikyuu Legends",  -- NOWY PRZYCISK
+        Color = Color3.fromRGB(255, 165, 0),
+        URL = "https://raw.githubusercontent.com/ogscripts/haikyuu/main/OpenSource.txt"
+    },
+    {
+        Name = "No Scope Arcade", 
+        Color = Color3.fromRGB(59, 130, 246),
+        Code = [[
+            _G.HeadSize = 50
+            _G.Disabled = true
+            game:GetService('RunService').RenderStepped:Connect(function()
+                if _G.Disabled then
+                    for _,v in pairs(game:GetService('Players'):GetPlayers()) do
+                        if v ~= game.Players.LocalPlayer then
+                            pcall(function()
+                                v.Character.HumanoidRootPart.Size = Vector3.new(_G.HeadSize, _G.HeadSize, _G.HeadSize)
+                                v.Character.HumanoidRootPart.Transparency = 0.7
+                                v.Character.HumanoidRootPart.BrickColor = BrickColor.new("Really blue")
+                                v.Character.HumanoidRootPart.Material = "Neon"
+                                v.Character.HumanoidRootPart.CanCollide = false
+                            end)
+                        end
+                    end
+                end
+            end)
+        ]]
+    },
+    {Name = "Universal", Color = Color3.fromRGB(16, 185, 129), URL = "https://raw.githubusercontent.com/cuztys/CutzyUniversal1.0/main/CutzyUniversal1.4"},
+    {Name = "Fisch", Color = Color3.fromRGB(234, 179, 8), URL = "https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Fisch.lua"},
+    {Name = "Muscle Legends", Color = Color3.fromRGB(244, 114, 182), URL = "https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Muscle%20Legends.lua"},
+    {Name = "ESP", Color = Color3.fromRGB(107, 114, 128), URL = "https://raw.githubusercontent.com/Lucasfin000/SpaceHub/main/UESP"}
+}
+
+-- Generowanie przycisków
+local buttonHeight = 35
+
+for i, script in ipairs(scripts) do
+    local button = Instance.new("TextButton")
+    button.Text = script.Name
+    button.Size = UDim2.new(1, -20, 0, buttonHeight)
+    button.Position = UDim2.new(0, 10, 0, (i-1)*(buttonHeight + 8))
+    button.BackgroundColor3 = script.Color
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.SourceSansBold
+    button.TextScaled = true
+    button.Parent = scriptsFrame
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = button
+    
+    button.MouseButton1Click:Connect(function()
+        if _G.AllScriptsDisabled then return end
+        if script.Code then
+            loadstring(script.Code)()
+        elseif script.URL then
+            loadstring(game:HttpGet(script.URL, true))()
+        end
+    end)
+end
+
+-- Stopka
+local footer = Instance.new("Frame")
+footer.Size = UDim2.new(1, -20, 0, 20)
+footer.Position = UDim2.new(0, 10, 1, -30)
+footer.BackgroundTransparency = 1
+footer.Parent = frame
+
+local footerLabel = Instance.new("TextLabel")
+footerLabel.Text = "Hub made by 04xSkater | Scripts are not mine"
+footerLabel.Size = UDim2.new(0.7, 0, 1, 0)
+footerLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+footerLabel.TextSize = 12
+footerLabel.Font = Enum.Font.SourceSans
+footerLabel.TextXAlignment = Enum.TextXAlignment.Left
+footerLabel.BackgroundTransparency = 1
+footerLabel.Parent = footer
+
+-- Przycisk Discord
+local discordButton = Instance.new("TextButton")
+discordButton.Text = "DISCORD"
+discordButton.Size = UDim2.new(0.25, 0, 1, 0)
+discordButton.Position = UDim2.new(0.75, 5, 0, 0)
+discordButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+discordButton.TextColor3 = Color3.new(1, 1, 1)
+discordButton.Font = Enum.Font.SourceSansBold
+discordButton.TextSize = 12
+discordButton.Parent = footer
+
+local discordCorner = Instance.new("UICorner")
+discordCorner.CornerRadius = UDim.new(0, 5)
+discordCorner.Parent = discordButton
+
+-- System powiadomień
+local notification = Instance.new("Frame")
+notification.Size = UDim2.new(0, 250, 0, 40)
+notification.Position = UDim2.new(0.5, -125, 1, -100)
+notification.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+notification.BackgroundTransparency = 1
+notification.AnchorPoint = Vector2.new(0.5, 0.5)
+notification.Visible = false
+notification.ZIndex = 100
+notification.Parent = screenGui
+
+local notificationCorner = Instance.new("UICorner")
+notificationCorner.CornerRadius = UDim.new(0, 8)
+notificationCorner.Parent = notification
+
+local notificationText = Instance.new("TextLabel")
+notificationText.Text = "Discord link copied to clipboard!"
+notificationText.Size = UDim2.new(1, -20, 1, -10)
+notificationText.Position = UDim2.new(0, 10, 0, 5)
+notificationText.TextColor3 = Color3.new(1, 1, 1)
+notificationText.Font = Enum.Font.SourceSansBold
+notificationText.TextSize = 14
+notificationText.BackgroundTransparency = 1
+notificationText.Parent = notification
+
+local function showNotification(customText)
+    notification.Visible = true
+    notification.BackgroundTransparency = 1
+    notification.Position = UDim2.new(0.5, -125, 1, -100)
+    
+    if customText then
+        notificationText.Text = customText
+    end
+    
+    local tweenIn = tweenService:Create(notification, TweenInfo.new(0.3), {
+        Position = UDim2.new(0.5, -125, 0.9, -50),
+        BackgroundTransparency = 0
+    })
+    
+    local tweenOut = tweenService:Create(notification, TweenInfo.new(0.3), {
+        Position = UDim2.new(0.5, -125, 1, -100),
+        BackgroundTransparency = 1
+    })
+    
+    tweenIn:Play()
+    tweenIn.Completed:Wait()
+    wait(1.5)
+    tweenOut:Play()
+    tweenOut.Completed:Connect(function()
+        notification.Visible = false
+        notificationText.Text = "Discord link copied to clipboard!"
+    end)
+end
+
+discordButton.MouseButton1Click:Connect(function()
+    pcall(function()
+        setclipboard("https://discord.gg/uSVCVudcnc")
+        showNotification()
+    end)
+end)
+
+-- System ukrywania GUI
+local UserInputService = game:GetService("UserInputService")
+local guiVisible = true
+
+local function toggleGUI()
+    guiVisible = not guiVisible
+    frame.Visible = guiVisible
+    showNotification(guiVisible and "GUI Enabled" or "GUI Hidden - Press RightControl to show again")
+end
+
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        toggleGUI()
+    end
+end)
