@@ -46,7 +46,7 @@ local scripts = {
         URL = "https://raw.githubusercontent.com/AhmadV99/Script-Games/refs/heads/main/Jujutsu%20Infinite.lua"
     },
     {
-        Name = "Haikyuu Legends",  -- NEW BUTTON
+        Name = "Haikyuu Legends", 
         Color = Color3.fromRGB(255, 165, 0),
         URL = "https://raw.githubusercontent.com/ogscripts/haikyuu/main/OpenSource.txt"
     },
@@ -74,6 +74,11 @@ local scripts = {
         Name = "ESP", 
         Color = Color3.fromRGB(107, 114, 128),
         URL = "https://raw.githubusercontent.com/Lucasfin000/SpaceHub/main/UESP"
+    },
+    {
+        Name = "Silent Aim", 
+        Color = Color3.fromRGB(220, 20, 60),  -- Crimson color
+        URL = "https://raw.githubusercontent.com/ogscripts/Skaterhub/main/aim"
     }
 }
 
