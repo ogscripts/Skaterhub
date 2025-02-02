@@ -1,0 +1,233 @@
+-- Load Fluent library
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
+-- Create main window
+local Window = Fluent:CreateWindow({
+    Title = "Skater Hub",
+    SubTitle = "v1.0",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(600, 400),
+    Acrylic = true, -- Transparent background
+    Theme = "Dark", -- Default theme
+    MinimizeKey = Enum.KeyCode.RightControl -- Key to minimize
+})
+
+-- Add categories (tabs)
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
+    Fun = Window:AddTab({ Title = "Fun", Icon = "coffee" }),
+    Premium = Window:AddTab({ Title = "Premium", Icon = "diamond" }),
+}
+
+-- Add sections and elements to the "Main" category
+local MainSection = Tabs.Main:AddSection("Scripts")
+
+-- List of scripts
+local scripts = {
+    {
+        Name = "Blade Ball", 
+        Color = Color3.fromRGB(0, 170, 255),
+        URL = "https://raw.githubusercontent.com/sirapobsriumang/Blade-ball/main/Blade-ball-free.lua"
+    },
+    {
+        Name = "Murder Mystery 2", 
+        Color = Color3.fromRGB(255, 0, 0),
+        URL = "https://raw.githubusercontent.com/mzkv/mm2/main/xHUB"
+    },
+    {
+        Name = "Jujutsu Chronicles", 
+        Color = Color3.fromRGB(139, 92, 246),
+        URL = "https://raw.githubusercontent.com/A9eaL2017/69/main/a9ealsjjc"
+    },
+    {
+        Name = "Jujutsu Infinite", 
+        Color = Color3.fromRGB(255, 215, 0),
+        URL = "https://raw.githubusercontent.com/AhmadV99/Script-Games/refs/heads/main/Jujutsu%20Infinite.lua"
+    },
+    {
+        Name = "Haikyuu Legends",  -- NEW BUTTON
+        Color = Color3.fromRGB(255, 165, 0),
+        URL = "https://raw.githubusercontent.com/ogscripts/haikyuu/main/OpenSource.txt"
+    },
+    {
+        Name = "No Scope Arcade", 
+        Color = Color3.fromRGB(59, 130, 246),
+        URL = "https://raw.githubusercontent.com/ogscripts/Skaterhub/main/arcade"
+    },
+    {
+        Name = "Universal", 
+        Color = Color3.fromRGB(16, 185, 129),
+        URL = "https://raw.githubusercontent.com/cuztys/CutzyUniversal1.0/main/CutzyUniversal1.4"
+    },
+    {
+        Name = "Fisch", 
+        Color = Color3.fromRGB(234, 179, 8),
+        URL = "https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Fisch.lua"
+    },
+    {
+        Name = "Muscle Legends", 
+        Color = Color3.fromRGB(244, 114, 182),
+        URL = "https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Muscle%20Legends.lua"
+    },
+    {
+        Name = "ESP", 
+        Color = Color3.fromRGB(107, 114, 128),
+        URL = "https://raw.githubusercontent.com/Lucasfin000/SpaceHub/main/UESP"
+    }
+}
+
+-- Generate buttons for each script
+for i, script in ipairs(scripts) do
+    MainSection:AddButton({
+        Title = script.Name,
+        Description = "Run script " .. script.Name,
+        Callback = function()
+            if script.Code then
+                loadstring(script.Code)()
+            elseif script.URL then
+                loadstring(game:HttpGet(script.URL, true))()
+            end
+        end
+    })
+end
+
+-- Add sections and elements to the "Settings" category
+local SettingsSection = Tabs.Settings:AddSection("Options")
+
+SettingsSection:AddToggle("ToggleDisableAll", {
+    Title = "Disable all scripts",
+    Default = false,
+    Callback = function(Value)
+        _G.AllScriptsDisabled = Value
+        Fluent:Notify({
+            Title = "Skater Hub",
+            Content = Value and "All scripts disabled" or "Scripts active",
+            Duration = 3
+        })
+    end
+})
+
+SettingsSection:AddToggle("ToggleAcrylicBackground", {
+    Title = "Acrylic Background",
+    Default = true,
+    Callback = function(Value)
+        Window.Acrylic = Value
+    end
+})
+
+-- Add a dropdown to choose the theme with additional options
+SettingsSection:AddDropdown("ThemeDropdown", {
+    Title = "Select Theme",
+    Default = "Dark",
+    Options = {"Dark", "Light", "Dracula", "Ocean", "Forest", "Purple", "Red"},
+    Callback = function(SelectedTheme)
+        Window.Theme = SelectedTheme
+    end
+})
+
+SettingsSection:AddSlider("WindowWidthSlider", {
+    Title = "Window Width",
+    Min = 400,
+    Max = 1000,
+    Default = 600,
+    Callback = function(Value)
+        Window.Size = UDim2.fromOffset(Value, Window.Size.Y.Offset)
+    end
+})
+
+SettingsSection:AddSlider("WindowHeightSlider", {
+    Title = "Window Height",
+    Min = 300,
+    Max = 800,
+    Default = 400,
+    Callback = function(Value)
+        Window.Size = UDim2.fromOffset(Window.Size.X.Offset, Value)
+    end
+})
+
+-- Add sections and elements to the "Fun" category
+local FunSection = Tabs.Fun:AddSection("Entertainment")
+
+-- Add a label with the hub and script creator info
+FunSection:AddLabel("Hub was created by 04xSkater. Scripts are not mine.")
+
+-- Add button for random color change
+FunSection:AddButton({
+    Title = "Random color",
+    Description = "Changes character color",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if character then
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.BrickColor = BrickColor.random()
+                end
+            end
+        end
+    end
+})
+
+-- Add toggle for noclip functionality
+FunSection:AddToggle("ToggleNoclip", {
+    Title = "Noclip",
+    Default = false,
+    Callback = function(Value)
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if character then
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = not Value
+                end
+            end
+        end
+    end
+})
+
+-- Add sections and elements to the "Premium" category
+local PremiumSection = Tabs.Premium:AddSection("Premium Features")
+
+-- Premium key input
+PremiumSection:AddInput("PremiumKeyInput", {
+    Title = "Enter Premium Key",
+    Placeholder = "Enter key here...",
+    Callback = function(input)
+        if string.lower(input) == "freekey" then
+            Fluent:Notify({
+                Title = "Premium Key",
+                Content = "Premium activated!",
+                Duration = 3
+            })
+        else
+            Fluent:Notify({
+                Title = "Premium Key",
+                Content = "Invalid key!",
+                Duration = 3
+            })
+        end
+    end
+})
+
+PremiumSection:AddButton({
+    Title = "Super power",
+    Description = "Only for premium users!",
+    Callback = function()
+        Fluent:Notify({
+            Title = "Skater Hub",
+            Content = "Super power activated!",
+            Duration = 3
+        })
+    end
+})
+
+-- Select the first tab after loading
+Window:SelectTab(1)
+
+-- Notification on GUI load
+Fluent:Notify({
+    Title = "Skater Hub",
+    Content = "Skater Hub Loaded!",
+    Duration = 5
+})
